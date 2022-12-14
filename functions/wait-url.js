@@ -1,6 +1,6 @@
 exports.handler = async function (context, event, callback) {
-  console.log(`🐞 wait-url called. ${event.request.headers.host}`);
-  const DOMAIN_NAME = event.request.headers.host;
+  console.log(`🐞 wait-url called.`);
+  const { DOMAIN_NAME } = context;
   try {
     const response = new Twilio.Response();
     response.appendHeader('Access-Control-Allow-Origin', '*');

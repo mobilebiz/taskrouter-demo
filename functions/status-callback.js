@@ -1,5 +1,5 @@
 exports.handler = async function (context, event, callback) {
-  console.log(`🐞 status-callback called. ${event.request.headers.host}`);
+  console.log(`🐞 status-callback called.`);
   const { TaskSid, CallStatus } = event;
   const { API_KEY, API_SECRET, ACCOUNT_SID, WORKSPACE_SID } = context;
   const client = require('twilio')(API_KEY, API_SECRET, {

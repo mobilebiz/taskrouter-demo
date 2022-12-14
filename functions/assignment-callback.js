@@ -1,7 +1,6 @@
 exports.handler = function (context, event, callback) {
-  console.log(`🐞 assignment-callback called. ${event.request.headers.host}`);
-  const DOMAIN_NAME = event.request.headers.host;
-  const { TRANSFER_FROM } = context;
+  console.log(`🐞 assignment-callback called.`);
+  const { DOMAIN_NAME, TRANSFER_FROM } = context;
   let res = {
     instruction: 'dequeue',
     from: TRANSFER_FROM,
