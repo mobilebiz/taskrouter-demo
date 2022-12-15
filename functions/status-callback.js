@@ -1,5 +1,5 @@
 exports.handler = async function (context, event, callback) {
-  const { TaskSid, CallStatus } = event;
+  const { TaskSid, CallStatus, ReservationSid } = event;
   console.log(`🐞 status-callback called. ${CallStatus}`);
   console.dir(event);
   const { API_KEY, API_SECRET, ACCOUNT_SID, WORKSPACE_SID } = context;
@@ -7,9 +7,24 @@ exports.handler = async function (context, event, callback) {
     accountSid: ACCOUNT_SID,
   });
   try {
-    await client.taskrouter.v1.workspaces(WORKSPACE_SID).tasks(TaskSid).update({
-      assignmentStatus: 'completed',
-    });
+    if (CallStatus === 'completed') {
+      // 通話が正常に終了したらタスクを完了させる
+      await client.taskrouter.v1
+        .workspaces(WORKSPACE_SID)
+        .tasks(TaskSid)
+        .update({
+          assignmentStatus: 'completed',
+        });
+    } else {
+      // 通話が失敗したら、Reservationをリジェクトする
+      await client.taskrouter.v1
+        .workspaces(WORKSPACE_SID)
+        .tasks(TaskSid)
+        .reservations(ReservationSid)
+        .update({
+          reservationStatus: 'rejected',
+        });
+    }
     callback(null, {});
   } catch (err) {
     console.error(`👺 ERROR: ${err.message ? err.message : err}`);
