@@ -162,16 +162,31 @@ exports.handler = function (context, event, callback) {
 
 ```javascript
 exports.handler = async function (context, event, callback) {
-  const { TaskSid, CallStatus } = event;
-  console.log(`🐞 status-callback called. ${CallStatus}`);
+  console.log(`🐞 status-callback called.`);
+  const { TaskSid, CallStatus, ReservationSid } = event;
   const { API_KEY, API_SECRET, ACCOUNT_SID, WORKSPACE_SID } = context;
   const client = require('twilio')(API_KEY, API_SECRET, {
     accountSid: ACCOUNT_SID,
   });
   try {
-    await client.taskrouter.v1.workspaces(WORKSPACE_SID).tasks(TaskSid).update({
-      assignmentStatus: 'completed',
-    });
+    if (CallStatus === 'completed') {
+      // 通話が正常に終了したらタスクを完了させる
+      await client.taskrouter.v1
+        .workspaces(WORKSPACE_SID)
+        .tasks(TaskSid)
+        .update({
+          assignmentStatus: 'completed',
+        });
+    } else {
+      // 通話が失敗したら、Reservationをリジェクトする
+      await client.taskrouter.v1
+        .workspaces(WORKSPACE_SID)
+        .tasks(TaskSid)
+        .reservations(ReservationSid)
+        .update({
+          reservationStatus: 'rejected',
+        });
+    }
     callback(null, {});
   } catch (err) {
     console.error(`👺 ERROR: ${err.message ? err.message : err}`);
@@ -182,4 +197,13 @@ exports.handler = async function (context, event, callback) {
 
 `Assignment Callback`から転送したときの`Status Callback`には、標準で`TaskId`が含まれています。なので、この値を使ってタスクを更新しています。
 
-以上が、今回のデモの一連の流れとなります。
+## イレギュラーな処理
+
+もし転送先が応答しなかった場合など、正常に通話が終了しない場合は、別の Worker にアサインし直す必要があります。  
+その場合は、`Status Callback`で、`CallStatus`を判定し、`completed`以外が入っている場合は、Reservation のステータスを`reject`に更新することで対応が可能です。
+上記の`status-callback.js`にその処理が記載されています。
+
+## まとめ
+
+以上が、今回のデモの一連の流れとなります。  
+タスクルーターは基本的にタスクをワーカーにアサインするところが主な役割になりますので、アサインされたあとの処理はプログラムで対応する必要があります。
