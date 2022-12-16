@@ -105,7 +105,7 @@ exports.handler = function (context, event, callback) {
 };
 ```
 
-[こちら](https://www.twilio.com/docs/taskrouter/handle-assignment-callbacks)のドキュメントに記載があるように、Assignment Callback では色々な処理が要されています。  
+[こちら](https://www.twilio.com/docs/taskrouter/handle-assignment-callbacks)のドキュメントに記載があるように、Assignment Callback では色々な処理が用意されています。  
 今回は、着信してキューに入っているコールを転送したいため、[dequeue](https://www.twilio.com/docs/taskrouter/handle-assignment-callbacks#dequeue-call)を使っていくことになります。
 
 `instruction`パラメータに、`dequeue`を指定することで、キューに入っているコールを取り出し、更に電話を転送してくれます。  
